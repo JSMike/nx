@@ -46,6 +46,11 @@ export interface nxViteTsPathsOptions {
    * @default true
    */
   buildLibsFromSource?: boolean;
+  /**
+   * Option to copy package.json file to outputDir if it exists in projectRoot
+   * @default true
+   */
+  copyPackageJson?: boolean;
 }
 
 export function nxViteTsPaths(options: nxViteTsPathsOptions = {}) {
@@ -71,6 +76,7 @@ export function nxViteTsPaths(options: nxViteTsPathsOptions = {}) {
   ];
   options.mainFields ??= [['exports', '.', 'import'], 'module', 'main'];
   options.buildLibsFromSource ??= true;
+  options.copyPackageJson ??= true;
   let projectRoot = '';
 
   return {
@@ -193,9 +199,9 @@ export function nxViteTsPaths(options: nxViteTsPathsOptions = {}) {
       // https://rollupjs.org/plugin-development/#resolveid
       return resolvedFile || null;
     },
-    async writeBundle(options) {
-      if (isUsingTsSolutionSetup()) return;
-      const outDir = options.dir || 'dist';
+    async writeBundle(writeBundleOptions) {
+      if (isUsingTsSolutionSetup() || !options.copyPackageJson) return;
+      const outDir = writeBundleOptions.dir || 'dist';
       const src = resolve(projectRoot, 'package.json');
       if (existsSync(src)) {
         const dest = join(outDir, 'package.json');
